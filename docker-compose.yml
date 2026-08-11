@@ -1,0 +1,169 @@
+services:
+
+  # ==========================================================
+  # Laravel PHP-FPM
+  # ==========================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: laravel-app
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    networks:
+      - laravel
+
+    volumes:
+      - laravel-storage:/var/www/html/storage
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "php-fpm -t"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+
+  # ==========================================================
+  # Nginx
+  # ==========================================================
+  nginx:
+    image: nginx:alpine
+
+    container_name: laravel-nginx
+
+    restart: unless-stopped
+
+    depends_on:
+      app:
+        condition: service_started
+
+    ports:
+      - "80:80"
+
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+      # Laravel public directory
+      - ./:/var/www/html:ro
+
+      # Storage dari PHP container
+      - laravel-storage:/var/www/html/storage:ro
+
+    networks:
+      - laravel
+
+
+  # ==========================================================
+  # MySQL
+  # ==========================================================
+  mysql:
+    image: mysql:8.4
+
+    container_name: laravel-mysql
+
+    restart: unless-stopped
+
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --max-connections=100
+      - --innodb-buffer-pool-size=256M
+
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+    networks:
+      - laravel
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u${DB_USERNAME}",
+          "-p${DB_PASSWORD}"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+
+  # ==========================================================
+  # phpMyAdmin
+  #
+  # Tidak berjalan default.
+  #
+  # Jalankan:
+  # docker compose --profile tools up -d phpmyadmin
+  # ==========================================================
+  phpmyadmin:
+    image: phpmyadmin:latest
+
+    container_name: laravel-phpmyadmin
+
+    restart: unless-stopped
+
+    profiles:
+      - tools
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 0
+      UPLOAD_LIMIT: 50M
+
+    ports:
+      - "127.0.0.1:8080:80"
+
+    mem_limit: 256m
+
+    networks:
+      - laravel
+
+
+# ============================================================
+# Volumes
+# ============================================================
+volumes:
+
+  mysql-data:
+    name: laravel-mysql-data
+
+  laravel-storage:
+    name: laravel-storage
+
+
+# ============================================================
+# Network
+# ============================================================
+networks:
+
+  laravel:
+    name: laravel-network
+    driver: bridge
