@@ -5,6 +5,16 @@ FROM composer:2 AS composer
 
 WORKDIR /app
 
+# GD build dependencies
+RUN apk add --no-cache \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libpng-dev \
+    && docker-php-ext-configure gd \
+        --with-freetype \
+        --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd
+
 COPY composer.json composer.lock ./
 
 RUN composer install \
@@ -17,8 +27,6 @@ RUN composer install \
 
 # ============================================================
 # Stage 2: Frontend build
-# Node hanya digunakan ketika BUILD.
-# Tidak ikut running di production.
 # ============================================================
 FROM node:22-alpine AS frontend
 
@@ -34,33 +42,54 @@ RUN npm run build
 
 
 # ============================================================
-# Stage 3: Production PHP
+# Stage 3: Production PHP-FPM
 # ============================================================
 FROM php:8.4-fpm-alpine
 
 WORKDIR /var/www/html
 
-# System dependencies
+# ------------------------------------------------------------
+# Runtime + build dependencies
+# ------------------------------------------------------------
 RUN apk add --no-cache \
     bash \
     curl \
+    freetype \
+    libjpeg-turbo \
+    libpng \
+    icu-libs \
+    libzip \
+    oniguruma \
+    mysql-client \
+    unzip \
+    && apk add --no-cache --virtual .build-deps \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libpng-dev \
     icu-dev \
     libzip-dev \
     oniguruma-dev \
-    mysql-client \
-    unzip \
-    && docker-php-ext-install \
+    && docker-php-ext-configure gd \
+        --with-freetype \
+        --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
         bcmath \
+        gd \
         intl \
         mbstring \
         opcache \
         pdo_mysql \
-        zip
+        zip \
+    && apk del .build-deps
 
+# ------------------------------------------------------------
 # PHP production configuration
+# ------------------------------------------------------------
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
-# OPcache configuration
+# ------------------------------------------------------------
+# OPcache
+# ------------------------------------------------------------
 RUN { \
         echo 'opcache.enable=1'; \
         echo 'opcache.enable_cli=1'; \
@@ -71,7 +100,9 @@ RUN { \
         echo 'opcache.revalidate_freq=0'; \
     } > /usr/local/etc/php/conf.d/opcache.ini
 
-# PHP upload / execution settings
+# ------------------------------------------------------------
+# PHP settings
+# ------------------------------------------------------------
 RUN { \
         echo 'upload_max_filesize=50M'; \
         echo 'post_max_size=50M'; \
@@ -79,22 +110,30 @@ RUN { \
         echo 'max_execution_time=120'; \
     } > /usr/local/etc/php/conf.d/laravel.ini
 
+# ------------------------------------------------------------
 # Copy Laravel application
+# ------------------------------------------------------------
 COPY --chown=www-data:www-data . .
 
-# Copy Composer dependencies from composer stage
+# ------------------------------------------------------------
+# Copy Composer dependencies
+# ------------------------------------------------------------
 COPY --from=composer \
     --chown=www-data:www-data \
     /app/vendor \
     ./vendor
 
-# Copy Vite production assets
+# ------------------------------------------------------------
+# Copy Vite production build
+# ------------------------------------------------------------
 COPY --from=frontend \
     --chown=www-data:www-data \
     /app/public/build \
     ./public/build
 
+# ------------------------------------------------------------
 # Laravel writable directories
+# ------------------------------------------------------------
 RUN mkdir -p \
         storage/framework/cache \
         storage/framework/sessions \
@@ -108,7 +147,9 @@ RUN mkdir -p \
         storage \
         bootstrap/cache
 
-# Laravel production optimizations
+# ------------------------------------------------------------
+# Clear Laravel caches
+# ------------------------------------------------------------
 RUN php artisan config:clear \
     && php artisan route:clear \
     && php artisan view:clear

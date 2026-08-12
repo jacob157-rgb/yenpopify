@@ -53,8 +53,6 @@ Route::middleware(['auth', 'role:user'])->group(function () {
 Route::delete('/histori/file/{id}', [FrontendHistoriController::class, 'deleteFile'])
     ->name('frontend.histori.file.delete');
 
-
-
 });
 Route::post('/admin/transaksi/{id}/approve', [TransaksiController::class, 'approve'])
     ->name('admin.transaksi.approve');

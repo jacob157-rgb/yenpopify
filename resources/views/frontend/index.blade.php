@@ -77,6 +77,103 @@
             align-items: center;
             font-size: 24px;
         }
+
+        .welcome-modal .modal-dialog {
+            max-width: min(92vw, 620px);
+            margin: 1rem auto;
+        }
+
+        .welcome-modal .modal-content {
+            background: transparent;
+            border: 0;
+            border-radius: 0;
+            overflow: visible;
+            box-shadow: none;
+        }
+
+        .welcome-modal .modal-body {
+            padding: 0;
+            position: relative;
+            background: transparent;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .welcome-modal .modal-image {
+            display: block;
+            width: auto;
+            max-width: 100%;
+            height: auto;
+            max-height: min(82vh, 720px);
+            object-fit: contain;
+            object-position: center;
+            margin: 0 auto;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .welcome-modal .btn-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 10;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 50%;
+            padding: 0.65rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 1;
+        }
+
+        @media (max-width: 576px) {
+            .welcome-modal .modal-dialog {
+                margin: 0;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .welcome-modal .modal-content {
+                border-radius: 0;
+            }
+
+            .welcome-modal .modal-body {
+                padding: 0;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+            }
+
+            .welcome-modal .modal-image {
+                display: block;
+                width: auto;
+                max-width: 92vw;
+                max-height: 80vh;
+                margin: 0 auto;
+                object-fit: contain;
+            }
+
+            .welcome-modal .btn-close {
+                top: 8px;
+                right: 8px;
+                padding: 0.5rem;
+            }
+
+            .header-carousel .owl-nav {
+                position: absolute;
+                bottom: 60px;
+                left: 0;
+                right: 0;
+                display: flex;
+                justify-content: space-between;
+                padding: 0 15px;
+                z-index: 10;
+            }
+
+            .header-carousel .owl-nav button {
+                width: 45px;
+                height: 45px;
+            }
+        }
     </style>
 
 
@@ -86,22 +183,118 @@
 
     <!-- Spinner Start -->
     <div id="spinner"
-        class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        class="show position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center bg-white">
         <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
             <span class="sr-only">Loading...</span>
         </div>
     </div>
     <!-- Spinner End -->
 
+    <!-- Mobile Navbar -->
+    <div class="container-fluid d-lg-none bg-white py-3">
+        <div class="d-flex align-items-center justify-content-between">
+
+            {{-- Logo --}}
+            <a href="{{ url('/') }}" class="navbar-brand d-flex align-items-center p-0">
+                <img src="{{ asset('Frontend/img/yen.png') }}" alt="YenPhoto Logo" class="me-2"
+                    style="height: 40px; width: auto;">
+
+                <h1 class="display-6 m-0">
+                    <span style="color: red;">Yen</span>
+                    <span style="color: blue;">Photo</span>
+                </h1>
+            </a>
+
+            {{-- Login / User Menu --}}
+            <div class="d-flex align-items-center">
+
+                {{-- Jika belum login --}}
+                @guest
+                    <a href="{{ route('login') }}" class="btn btn-primary rounded-pill px-3 py-2">
+                        <i class="fas fa-sign-in-alt me-1"></i>
+                        Login
+                    </a>
+                @endguest
+
+                {{-- Jika sudah login --}}
+                @auth
+                    <div class="dropdown">
+
+                        {{-- User Button --}}
+                        <a class="text-muted d-flex align-items-center justify-content-center dropdown-toggle text-decoration-none"
+                            href="#" role="button" id="dropdownUserMobile" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+
+                            <span class="rounded-circle btn-md-square border">
+                                <i class="fas fa-user"></i>
+                            </span>
+                        </a>
+
+                        {{-- Dropdown --}}
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUserMobile">
+
+                            {{-- Informasi User --}}
+                            <li>
+                                <div class="px-3 py-2">
+                                    <div class="fw-semibold text-dark">
+                                        {{ Auth::user()->name }}
+                                    </div>
+
+                                    <small class="text-muted text-capitalize">
+                                        {{ Auth::user()->role }}
+                                    </small>
+                                </div>
+                            </li>
+
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+
+                            {{-- Dashboard khusus Admin --}}
+                            @if (Auth::user()->role === 'admin')
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('admin.dashboard') }}">
+                                        <i class="fas fa-tachometer-alt me-2"></i>
+                                        Dashboard
+                                    </a>
+                                </li>
+                            @endif
+
+                            {{-- Histori Pesanan --}}
+                            <li>
+                                <a class="dropdown-item" href="{{ route('frontend.histori.index') }}">
+                                    <i class="fas fa-history me-2"></i>
+                                    Histori Pesanan
+                                </a>
+                            </li>
+
+                            {{-- Logout --}}
+                            <li>
+                                <a class="dropdown-item text-danger" href="{{ route('logout') }}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>
+                                    Logout
+                                </a>
+                            </li>
+
+                        </ul>
+                    </div>
+                @endauth
+
+            </div>
+
+        </div>
+    </div>
+
+
 
     <!-- Topbar Start -->
-    <div class="container-fluid px-5 py-4 d-none d-lg-block">
+    <div class="container-fluid d-none d-lg-block px-5 py-4">
         <div class="row gx-0 align-items-center text-center">
 
             <!-- Kiri (Logo) -->
-            <div class="col-md-4 col-lg-3 text-center text-lg-start">
+            <div class="col-md-4 col-lg-3 text-lg-start text-center">
                 <div class="d-inline-flex align-items-center">
-                    <a href="" class="navbar-brand p-0 d-flex align-items-center">
+                    <a href="" class="navbar-brand d-flex align-items-center p-0">
                         <img src="{{ asset('Frontend/img/yen.png') }}" alt="YenPhoto Logo" class="me-2"
                             style="height: 45px; width: auto;">
 
@@ -122,61 +315,76 @@
             </div>
 
             <!-- Kanan (Login / User Menu) -->
-            <div class="col-md-4 col-lg-3 text-center text-lg-end">
+            <div class="col-md-4 col-lg-3 text-lg-end text-center">
                 <div class="d-inline-flex align-items-center">
 
                     {{-- Jika belum login --}}
                     @guest
-                        <a href="{{ route('login') }}" class="btn btn-primary rounded-pill px-4 py-2 me-3">
-                            <i class="fas fa-sign-in-alt me-1"></i> Login
+                        <a href="{{ route('login') }}" class="btn btn-primary rounded-pill me-3 px-4 py-2">
+                            <i class="fas fa-sign-in-alt me-1"></i>
+                            Login
                         </a>
                     @endguest
 
                     {{-- Jika sudah login --}}
                     @auth
                         <div class="dropdown me-3">
-                            <a class="text-muted d-flex align-items-center justify-content-center dropdown-toggle"
+
+                            <a class="text-muted d-flex align-items-center justify-content-center dropdown-toggle text-decoration-none"
                                 href="#" role="button" id="dropdownUser" data-bs-toggle="dropdown"
                                 aria-expanded="false">
+
+                                {{-- Nama & Role --}}
+                                <div class="me-2 text-end">
+                                    <div class="fw-semibold text-dark">
+                                        {{ Auth::user()->name }}
+                                    </div>
+
+                                    <small class="text-muted">
+                                        {{ Auth::user()->role }}
+                                    </small>
+                                </div>
+
+                                {{-- Icon User --}}
                                 <span class="rounded-circle btn-md-square border">
                                     <i class="fas fa-user"></i>
                                 </span>
+
                             </a>
 
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
+
+                                {{-- Dashboard khusus Admin --}}
+                                @if (Auth::user()->role === 'admin')
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.dashboard') }}">
+                                            <i class="fas fa-tachometer-alt me-2"></i>
+                                            Dashboard
+                                        </a>
+                                    </li>
+                                @endif
                                 <li>
                                     <a class="dropdown-item" href="{{ route('frontend.histori.index') }}">
-                                        <i class="fas fa-history me-2"></i> Histori Pesanan
+                                        <i class="fas fa-history me-2"></i>
+                                        Histori Pesanan
                                     </a>
                                 </li>
+
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+
                                 <li>
                                     <a class="dropdown-item text-danger" href="{{ route('logout') }}">
-                                        <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                        <i class="fas fa-sign-out-alt me-2"></i>
+                                        Logout
                                     </a>
                                 </li>
+
                             </ul>
                         </div>
                     @endauth
 
-                </div>
-            </div>
-
-            <!-- Modal Pop up -->
-            <div class="modal fade" id="welcomeModal" tabindex="-1">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content border-0 bg-transparent">
-
-                        <div class="modal-body p-0 position-relative text-center">
-
-                            <button type="button" class="btn-close position-absolute top-0 end-0 m-2 bg-white"
-                                data-bs-dismiss="modal">
-                            </button>
-
-                            <img src="{{ asset('Frontend/img/order.png') }}" alt="Poster" class="img-fluid rounded"
-                                style="max-height: 80vh; width: auto;">
-                        </div>
-
-                    </div>
                 </div>
             </div>
 
@@ -185,11 +393,27 @@
     </div>
     <!-- Topbar End -->
 
+    <!-- Modal Pop up -->
+    <div class="modal fade welcome-modal" id="welcomeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+            <div class="modal-content">
+                <div class="modal-body position-relative p-0 text-center">
+                    <button type="button" class="btn-close position-absolute end-0 top-0 m-2"
+                        data-bs-dismiss="modal" aria-label="Close">
+                    </button>
+
+                    <img src="{{ asset('Frontend/img/order.png') }}" alt="Poster"
+                        class="modal-image img-fluid rounded">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Carousel Start -->
     <div class="container-fluid carousel bg-light px-0">
         <div class="row g-0 justify-content-end">
             <div class="col-12 col-lg-7 col-xl-9">
-                <div class="header-carousel owl-carousel bg-light py-5">
+                <div class="header-carousel owl-carousel bg-light pb-5">
 
                     <!-- Slide 1 -->
                     <div class="row g-0 header-carousel-item align-items-center">
@@ -198,15 +422,15 @@
                                 alt="Image">
                         </div>
                         <div class="col-xl-6 carousel-content p-4">
-                            <h4 class="text-uppercase fw-bold mb-4 wow fadeInRight" data-wow-delay="0.1s"
+                            <h4 class="text-uppercase fw-bold wow fadeInRight mb-4" data-wow-delay="0.1s"
                                 style="letter-spacing: 3px;">Diskon Hingga 40%</h4>
-                            <h1 class="display-3 text-capitalize mb-4 wow fadeInRight" data-wow-delay="0.3s">
+                            <h1 class="display-3 text-capitalize wow fadeInRight mb-4" data-wow-delay="0.3s">
                                 Cetak Banner, Spanduk & Media Promosi
                             </h1>
                             <p class="text-dark wow fadeInRight" data-wow-delay="0.5s">
                                 Hasil cetak tajam, bahan berkualitas, pengerjaan cepat.
                             </p>
-                            <a class="btn btn-primary rounded-pill py-3 px-5 wow fadeInRight" data-wow-delay="0.7s"
+                            <a class="btn btn-primary rounded-pill wow fadeInRight px-5 py-3" data-wow-delay="0.7s"
                                 href="#">Pesan Sekarang</a>
                         </div>
                     </div>
@@ -218,15 +442,15 @@
                                 alt="Image">
                         </div>
                         <div class="col-xl-6 carousel-content p-4">
-                            <h4 class="text-uppercase fw-bold mb-4 wow fadeInRight" data-wow-delay="0.1s"
+                            <h4 class="text-uppercase fw-bold wow fadeInRight mb-4" data-wow-delay="0.1s"
                                 style="letter-spacing: 3px;">Mulai dari Rp 20.000</h4>
-                            <h1 class="display-3 text-capitalize mb-4 wow fadeInRight" data-wow-delay="0.3s">
+                            <h1 class="display-3 text-capitalize wow fadeInRight mb-4" data-wow-delay="0.3s">
                                 Cetak Kartu Nama & Undangan
                             </h1>
                             <p class="text-dark wow fadeInRight" data-wow-delay="0.5s">
                                 Tersedia berbagai pilihan bahan premium & finishing elegan.
                             </p>
-                            <a class="btn btn-primary rounded-pill py-3 px-5 wow fadeInRight" data-wow-delay="0.7s"
+                            <a class="btn btn-primary rounded-pill wow fadeInRight px-5 py-3" data-wow-delay="0.7s"
                                 href="#">Lihat Produk</a>
                         </div>
                     </div>
@@ -241,7 +465,7 @@
                         style="object-fit: cover;" alt="Image">
 
                     <div class="carousel-banner-offer">
-                        <p class="bg-primary text-white rounded fs-5 py-2 px-4 mb-0 me-3">Best Quality</p>
+                        <p class="bg-primary fs-5 mb-0 me-3 rounded px-4 py-2 text-white">Best Quality</p>
                     </div>
                 </div>
             </div>
@@ -338,7 +562,7 @@
                 <!-- Banner Flexi -->
                 <div class="col-lg-6 wow fadeInLeft" data-wow-delay="0.2s">
                     <a href="#"
-                        class="d-flex align-items-center justify-content-between border bg-white rounded p-4 shadow-sm">
+                        class="d-flex align-items-center justify-content-between rounded border bg-white p-4 shadow-sm">
                         <div>
                             <p class="text-muted mb-3">Solusi media promosi yang kuat dan tahan lama</p>
                             <h3 class="text-primary">Banner Flexi Premium</h3>
@@ -350,13 +574,13 @@
                     </a>
                 </div>
 
-                <!-- Kalender -->
+                <!-- Sticker -->
                 <div class="col-lg-6 wow fadeInRight" data-wow-delay="0.3s">
                     <a href="#"
-                        class="d-flex align-items-center justify-content-between border bg-white rounded p-4 shadow-sm">
+                        class="d-flex align-items-center justify-content-between rounded border bg-white p-4 shadow-sm">
                         <div>
                             <p class="text-muted mb-3">Desain eksklusif untuk kebutuhan kantor & branding</p>
-                            <h3 class="text-primary">Kalender Custom</h3>
+                            <h3 class="text-primary">Sticker Custom</h3>
                             <h1 class="display-3 text-secondary mb-0">
                                 Mulai <span class="text-primary fw-normal">10.000</span>
                             </h1>
@@ -376,14 +600,14 @@
         <div class="container py-5">
             <div class="tab-class">
                 <div class="row g-4">
-                    <div class="col-lg-4 text-start wow fadeInLeft" data-wow-delay="0.1s">
+                    <div class="col-lg-4 wow fadeInLeft text-start" data-wow-delay="0.1s">
                         <h1>Our Products</h1>
                     </div>
-                    <div class="col-lg-8 text-end wow fadeInRight" data-wow-delay="0.1s">
-                        <ul class="nav nav-pills d-inline-flex text-center mb-5">
+                    <div class="col-lg-8 wow fadeInRight text-end" data-wow-delay="0.1s">
+                        <ul class="nav nav-pills d-inline-flex mb-5 text-center">
                             {{-- All Products --}}
                             <li class="nav-item mb-4">
-                                <a class="d-flex mx-2 py-2 bg-light rounded-pill active" data-bs-toggle="pill"
+                                <a class="d-flex bg-light rounded-pill active mx-2 py-2" data-bs-toggle="pill"
                                     href="#tab-all">
                                     <span class="text-dark" style="width: 130px;">All Products</span>
                                 </a>
@@ -392,7 +616,7 @@
                             {{-- Loop kategori --}}
                             @foreach ($kategoris as $kategori)
                                 <li class="nav-item mb-4">
-                                    <a class="d-flex mx-2 py-2 bg-light rounded-pill" data-bs-toggle="pill"
+                                    <a class="d-flex bg-light rounded-pill mx-2 py-2" data-bs-toggle="pill"
                                         href="#tab-{{ $kategori->id }}">
                                         <span class="text-dark"
                                             style="width: 130px;">{{ $kategori->nama_kategori }}</span>
@@ -405,12 +629,12 @@
 
                 <div class="tab-content">
                     {{-- All Products --}}
-                    <div id="tab-all" class="tab-pane fade show p-0 active">
+                    <div id="tab-all" class="tab-pane fade show active p-0">
                         <div class="row g-4">
                             @forelse ($produks as $produk)
                                 <div class="col-md-6 col-lg-4 col-xl-3">
-                                    <div class="product-item rounded wow fadeInUp" data-wow-delay="0.1s">
-                                        <div class="product-item-inner border rounded">
+                                    <div class="product-item wow fadeInUp rounded" data-wow-delay="0.1s">
+                                        <div class="product-item-inner rounded border">
                                             <div class="product-item-inner-item">
                                                 <img src="{{ asset('storage/' . $produk->gambar) }}"
                                                     class="img-fluid w-100 rounded-top"
@@ -420,7 +644,7 @@
                                                             class="fa fa-eye fa-1x"></i></a>
                                                 </div>
                                             </div>
-                                            <div class="text-center rounded-bottom p-4">
+                                            <div class="rounded-bottom p-4 text-center">
                                                 <a href="#"
                                                     class="d-block mb-2">{{ $produk->kategori->nama_kategori ?? '-' }}</a>
                                                 <a href="{{ route('frontend.produk.show', $produk->id) }}"
@@ -430,9 +654,9 @@
                                             </div>
                                         </div>
                                         <div
-                                            class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
+                                            class="product-item-add border-top-0 rounded-bottom border p-4 pt-0 text-center">
                                             <a href="javascript:void(0)"
-                                                class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4 btnAddToCart"
+                                                class="btn btn-primary border-secondary rounded-pill btnAddToCart mb-4 px-4 py-2"
                                                 data-id="{{ $produk->id }}" data-nama="{{ $produk->nama_produk }}"
                                                 data-harga="{{ $produk->harga }}">
                                                 <i class="fas fa-shopping-cart me-2"></i> Add To Cart
@@ -452,8 +676,8 @@
                             <div class="row g-4">
                                 @forelse ($kategori->produks as $produk)
                                     <div class="col-md-6 col-lg-4 col-xl-3">
-                                        <div class="product-item rounded wow fadeInUp" data-wow-delay="0.1s">
-                                            <div class="product-item-inner border rounded">
+                                        <div class="product-item wow fadeInUp rounded" data-wow-delay="0.1s">
+                                            <div class="product-item-inner rounded border">
                                                 <div class="product-item-inner-item">
                                                     <img src="{{ asset('storage/' . $produk->gambar) }}"
                                                         class="img-fluid w-100 rounded-top"
@@ -463,7 +687,7 @@
                                                                 class="fa fa-eye fa-1x"></i></a>
                                                     </div>
                                                 </div>
-                                                <div class="text-center rounded-bottom p-4">
+                                                <div class="rounded-bottom p-4 text-center">
                                                     <a href="#"
                                                         class="d-block mb-2">{{ $kategori->nama_kategori }}</a>
                                                     <a href="{{ route('frontend.produk.show', $produk->id) }}"
@@ -473,9 +697,9 @@
                                                 </div>
                                             </div>
                                             <div
-                                                class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
+                                                class="product-item-add border-top-0 rounded-bottom border p-4 pt-0 text-center">
                                                 <a href="javascript:void(0)"
-                                                    class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4 btnAddToCart"
+                                                    class="btn btn-primary border-secondary rounded-pill btnAddToCart mb-4 px-4 py-2"
                                                     data-id="{{ $produk->id }}"
                                                     data-nama="{{ $produk->nama_produk }}"
                                                     data-harga="{{ $produk->harga }}">
@@ -499,10 +723,10 @@
 
     <!-- Bestseller Products Start -->
     <div class="container-fluid products pb-5">
-        <div class="container products-mini py-5">
-            <div class="mx-auto text-center mb-5" style="max-width: 700px;">
+        <div class="products-mini container py-5">
+            <div class="mx-auto mb-5 text-center" style="max-width: 700px;">
                 <h4
-                    class="text-primary mb-4 border-bottom border-primary border-2 d-inline-block p-2 title-border-radius">
+                    class="text-primary border-bottom border-primary d-inline-block title-border-radius mb-4 border-2 p-2">
                     Bestseller Products
                 </h4>
                 <p class="mb-0">Produk paling banyak dibeli oleh customer.</p>
@@ -511,7 +735,7 @@
             <div class="row g-4">
                 @foreach ($bestseller as $item)
                     <div class="col-md-6 col-lg-6 col-xl-4">
-                        <div class="products-mini-item border shadow-sm rounded">
+                        <div class="products-mini-item rounded border shadow-sm">
                             <div class="row g-0">
                                 <div class="col-5">
                                     <div class="products-mini-img border-end h-100 position-relative">
@@ -528,7 +752,7 @@
 
                                 <div class="col-7">
                                     <div class="products-mini-content p-3">
-                                        <span class="d-block mb-1 text-secondary small">
+                                        <span class="d-block text-secondary small mb-1">
                                             {{ $item->kategori->nama_kategori ?? 'Kategori' }}
                                         </span>
 
@@ -544,8 +768,8 @@
                             </div>
 
                             <div
-                                class="products-mini-add border p-3 d-flex justify-content-between align-items-center">
-                                <button class="btn btn-primary rounded-pill py-2 px-4 addCart"
+                                class="products-mini-add d-flex justify-content-between align-items-center border p-3">
+                                <button class="btn btn-primary rounded-pill addCart px-4 py-2"
                                     data-id="{{ $item->id }}">
                                     <i class="fas fa-shopping-cart me-2"></i> Add To Cart
                                 </button>
@@ -567,9 +791,9 @@
 
 
     <!-- Footer Start -->
-    <div class="container-fluid footer py-5 wow fadeIn" data-wow-delay="0.2s">
+    <div class="container-fluid footer wow fadeIn py-5" data-wow-delay="0.2s">
         <div class="container py-5">
-            <div class="row g-4 rounded mb-5" style="background: rgba(255, 255, 255, .03);">
+            <div class="row g-4 mb-5 rounded" style="background: rgba(255, 255, 255, .03);">
                 <div class="col-md-6 col-lg-6 col-xl-3">
                     <div class="rounded p-4">
                         <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mb-4"
@@ -613,7 +837,7 @@
                             <i class="fab fa-firefox-browser fa-2x text-primary"></i>
                         </div>
                         <div>
-                            <h4 class="text-white">yenpoptegal.com</h4>
+                            <h4 class="text-white">yenpopify.biz.id</h4>
                             <p class="mb-2">(0283) 4535900</p>
                         </div>
                     </div>
@@ -628,13 +852,13 @@
     <div class="container-fluid copyright py-4">
         <div class="container">
             <div class="row g-4 align-items-center">
-                <div class="col-md-6 text-center text-md-start mb-md-0">
+                <div class="col-md-6 text-md-start mb-md-0 text-center">
                     <span class="text-white"><a href="#" class="border-bottom text-white"><i
                                 class="fas fa-copyright text-light me-2"></i>Yen Photo Tegal</a>, All right
                         reserved.</span>
                 </div>
-                <div class="col-md-6 text-center text-md-end text-white">
-                    Created By <a class="border-bottom text-white" href="#">Cynhia dan Citra</a>.
+                <div class="col-md-6 text-md-end text-center text-white">
+                    Created By <a class="border-bottom text-white" href="#">Cynthia dan Citra</a>.
                 </div>
             </div>
         </div>
@@ -656,7 +880,7 @@
 
                 {{-- HEADER --}}
                 <div class="modal-header" style="background: linear-gradient(135deg, #1f1f1f, #3b3b3b);">
-                    <h5 class="modal-title text-white fw-semibold">
+                    <h5 class="modal-title fw-semibold text-white">
                         <i class="bi bi-bag-check-fill me-2"></i> Keranjang Belanja
                     </h5>
                     <button class="btn-close btn-close-white shadow-sm" data-bs-dismiss="modal"></button>
@@ -666,16 +890,16 @@
                 <div class="modal-body p-4" style="background: #fafafa;">
 
                     {{-- CART TABLE --}}
-                    <div class="table-responsive rounded-4 shadow-sm mb-4"
+                    <div class="table-responsive rounded-4 mb-4 shadow-sm"
                         style="border: 1px solid #e5e5e5; overflow: hidden;">
-                        <table class="table table-hover align-middle mb-0" id="cartTable">
+                        <table class="table-hover mb-0 table align-middle" id="cartTable">
                             <thead style="background: #f3f3f3;">
                                 <tr>
                                     <th class="py-3">Produk</th>
-                                    <th class="text-center py-3">Harga</th>
-                                    <th class="text-center py-3">Qty</th>
-                                    <th class="text-end py-3">Total</th>
-                                    <th class="text-center py-3">Aksi</th>
+                                    <th class="py-3 text-center">Harga</th>
+                                    <th class="py-3 text-center">Qty</th>
+                                    <th class="py-3 text-end">Total</th>
+                                    <th class="py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -685,7 +909,7 @@
                     </div>
 
                     {{-- SUBTOTAL --}}
-                    <div class="d-flex justify-content-between align-items-center px-1 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3 px-1">
                         <span class="fw-semibold fs-5 text-secondary">Subtotal:</span>
                         <span id="cartSubtotal" class="fw-bold fs-4 text-dark">Rp 0</span>
                     </div>
@@ -709,7 +933,7 @@
                     <hr class="my-4">
 
                     <h5 class="fw-bold mb-3">
-                        <i class="bi bi-truck me-2 text-warning"></i>
+                        <i class="bi bi-truck text-warning me-2"></i>
                         Metode Pengiriman
                     </h5>
 
@@ -862,7 +1086,7 @@ overflow:hidden;">
                     <div class="mt-4">
 
                         {{-- BUTTON CHECKOUT --}}
-                        <button class="btn w-100 py-3 fw-bold shadow-sm" id="btnCheckout"
+                        <button class="btn w-100 fw-bold py-3 shadow-sm" id="btnCheckout"
                             style="border-radius: 14px; background: #000; color: white; transition: .2s;">
                             <i class="bi bi-arrow-right-circle me-2"></i> Pesan Sekarang
                         </button>
@@ -875,7 +1099,7 @@ overflow:hidden;">
 
         <script>
             const IS_LOGGED_IN = @json(Auth::check());
-            const LOGIN_URL = "{{ route('login') }}";
+            const LOGIN_URL = "{{ route('login', [], false) }}";
         </script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -891,8 +1115,30 @@ overflow:hidden;">
         <script src="{{ asset('Frontend/js/main.js') }}"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                let myModal = new bootstrap.Modal(document.getElementById('welcomeModal'));
-                myModal.show();
+                const modalEl = document.getElementById('welcomeModal');
+                const myModal = new bootstrap.Modal(modalEl, {
+                    backdrop: true,
+                    keyboard: true
+                });
+
+                const modalImage = modalEl?.querySelector('.modal-image');
+
+                const showModal = () => {
+                    setTimeout(() => myModal.show(), 250);
+                };
+
+                if (modalImage && modalImage.complete) {
+                    showModal();
+                } else if (modalImage) {
+                    modalImage.addEventListener('load', showModal, {
+                        once: true
+                    });
+                    modalImage.addEventListener('error', showModal, {
+                        once: true
+                    });
+                } else {
+                    showModal();
+                }
             });
         </script>
         <script>
@@ -1179,7 +1425,7 @@ overflow:hidden;">
                         btnCheckout.disabled = true;
 
 
-                        fetch("{{ route('frontend.transaksi.store') }}", {
+                        fetch("{{ route('frontend.transaksi.store', [], false) }}", {
                                 method: "POST",
                                 headers: {
                                     "Content-Type": "application/json",
